@@ -38,6 +38,11 @@ module PaperTrail
         class_attribute :version_association_name
         self.version_association_name = options[:version] || :version
 
+        class_attribute :associated_with
+        if options[:associated_with].present?
+          self.associated_with = options[:associated_with]
+        end
+
         # The version this instance was reified from.
         attr_accessor self.version_association_name
 
@@ -249,6 +254,13 @@ module PaperTrail
 
       private
 
+      def merge_associated_data(data)
+        data.merge!({
+          associated_type: self.send(self.associated_with).class.name,
+          associated_id: self.send(self.associated_with).id
+        })
+      end
+
       def source_version
         send self.class.version_association_name
       end
@@ -264,6 +276,9 @@ module PaperTrail
             data[:object_changes] = self.class.paper_trail_version_class.object_changes_col_is_json? ? changes_for_paper_trail :
               PaperTrail.serializer.dump(changes_for_paper_trail)
           end
+
+          data = merge_associated_data(data) if self.associated_with.present?
+
           send(self.class.versions_association_name).create! merge_metadata(data)
         end
       end
@@ -281,6 +296,9 @@ module PaperTrail
             data[:object_changes] = self.class.paper_trail_version_class.object_changes_col_is_json? ? changes_for_paper_trail :
               PaperTrail.serializer.dump(changes_for_paper_trail)
           end
+
+          data = merge_associated_data(data) if self.associated_with.present?
+
           send(self.class.versions_association_name).build merge_metadata(data)
         end
       end
@@ -311,6 +329,9 @@ module PaperTrail
             :object    => self.class.paper_trail_version_class.object_col_is_json? ? object_attrs : PaperTrail.serializer.dump(object_attrs),
             :whodunnit => PaperTrail.whodunnit
           }
+
+          data = merge_associated_data(data) if self.associated_with.present?
+
           send("#{self.class.version_association_name}=", self.class.paper_trail_version_class.create(merge_metadata(data)))
           send(self.class.versions_association_name).send :load_target
         end

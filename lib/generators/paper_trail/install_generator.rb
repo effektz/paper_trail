@@ -13,6 +13,7 @@ module PaperTrail
     def create_migration_file
       migration_template 'create_versions.rb', 'db/migrate/create_versions.rb'
       migration_template 'add_object_changes_to_versions.rb', 'db/migrate/add_object_changes_to_versions.rb' if options.with_changes?
+      migration_template 'add_associated_type_and_id_to_versions.rb', 'db/migrate/add_associated_type_and_id_to_versions.rb' if options.with_associations?
     end
 
     def self.next_migration_number(dirname)
