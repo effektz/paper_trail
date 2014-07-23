@@ -26,6 +26,7 @@ There's an excellent [RailsCast on implementing Undo with Paper Trail](http://ra
 * Supports custom name for versions association.
 * Thoroughly tested.
 * Threadsafe.
+* Store class associations (belongs_to) in versions
 
 
 ## Compatibility
@@ -251,6 +252,20 @@ Here's a helpful table showing what PaperTrail stores:
 
 PaperTrail stores the values in the Model Before column.  Most other auditing/versioning plugins store the After column.
 
+You can store a belongs_to association with each saved version to easily grab all children version of a parent object:
+
+```ruby
+class Author < ActiveRecord::Base
+  has_many :books
+end
+
+class Book < ActiveRecord::Base
+  belongs_to :author
+  has_paper_trail :associated_with => :author
+end
+```
+
+Every time an instance of the Book class is versioned, the associated_type and assocaited_id attributes will automatically be filled in with the Author that the Book belongs to.
 
 ## Choosing Lifecycle Events To Monitor
 
@@ -1121,6 +1136,7 @@ Many thanks to:
 * [Chulki Lee](https://github.com/chulkilee)
 * [Lucas Souza](https://github.com/lucasas)
 * [Russell Osborne](https://github.com/rposborne)
+* [Alex Weidmann](https://github.com/Effektz)
 
 
 ## Inspirations
